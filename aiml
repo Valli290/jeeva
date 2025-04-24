@@ -1,0 +1,32 @@
+import os
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array, save_img
+
+def augment_images(input_dir, output_dir, augment_count=5):
+    datagen = ImageDataGenerator(
+        rotation_range=20,
+        width_shift_range=0.1,
+        height_shift_range=0.1,
+        zoom_range=0.1,
+        horizontal_flip=True,
+        fill_mode='nearest'
+    )
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    for filename in os.listdir(input_dir):
+        img = load_img(os.path.join(input_dir, filename))
+        x = img_to_array(img)
+        x = x.reshape((1,) + x.shape)
+
+        i = 0
+        for batch in datagen.flow(x, batch_size=1):
+            new_name = f"{os.path.splitext(filename)[0]}_aug_{i}.png"
+            save_img(os.path.join(output_dir, new_name), batch[0])
+            print(new_name)
+            i += 1
+            if i >= augment_count:
+                break
+
+# Example usage:
+# augment_images('images/original', 'images/augmented', augment_count=3)
+
